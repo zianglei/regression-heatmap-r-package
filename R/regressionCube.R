@@ -184,7 +184,6 @@ pkg.env$data <- NA
   library(parallel)
   variable_classes <- lapply(data, class)
   workerFunction <- function(current_formula) {
-    #global_current_formula <<- current_formula
     current_formula_string <- current_formula[,'formula']
     dependent_class <- variable_classes[current_formula[,'dependentVariable']]
     
@@ -197,7 +196,6 @@ pkg.env$data <- NA
     # If binning fails, return null
     if(class(model) == "try-error") {
       message(paste0("'", current_formula_string, "' failed!"))
-      # current_formula['rSquared'] = 0;
     } else {
       if (dependent_class == 'numeric') {
         model_summary <- summary(model)
@@ -208,19 +206,25 @@ pkg.env$data <- NA
     }
     return(current_formula)
   }
+  # Convert the formula data frame into a list of entries
   formulas_matrix <- as.matrix(formulas)
   formulas_list <- lapply(1:NROW(formulas_matrix), function(i) formulas_matrix[i,,drop=FALSE])
+  # detect the number of cores and start the calculation process!
   numWorkers <- detectCores();
   if (parallel)
     res <- mclapply(formulas_list, workerFunction, mc.cores = numWorkers)
   else
     res <- lapply(formulas_list, workerFunction)
   
+  # Reconstruct a data frame from the result list
   formulas_names <- names(formulas)
   # when other metrics are added, they also need to get a new name here!
   formulas_names_with_rSquared <- c(formulas_names, 'rSquared')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
+  # If no R-squared values are found at all during the calulcation, simply assigning
+  # the new names array would result in an error. So we check if there are more dimensions
+  # than before!
   if (length(formulas) == length(result))
     names(result) <- formulas_names
   else
