@@ -197,7 +197,7 @@ pkg.env$data <- NA
     # If binning fails, return null
     if(class(model) == "try-error") {
       message(paste0("'", current_formula_string, "' failed!"))
-      current_formula['rSquared'] = 0;
+      # current_formula['rSquared'] = 0;
     } else {
       if (dependent_class == 'numeric') {
         model_summary <- summary(model)
@@ -221,7 +221,7 @@ pkg.env$data <- NA
   formulas_names_with_rSquared <- c(formulas_names, 'rSquared')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
-  if (length(data) == length(result))
+  if (length(formula) == length(result))
     names(result) <- formulas_names
   else
     names(result) <- formulas_names_with_rSquared
