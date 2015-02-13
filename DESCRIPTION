@@ -1,0 +1,9 @@
+Package: regressionCube
+Type: Package
+Title: Regression Cube R Backend for Access with OpenCPU
+Version: 1.0
+Date: 2015-01-13
+Author: Paul Klemm
+Maintainer: Paul Klemm <paul.klemm@googlemail.com>
+Description: More about what it does (maybe more than one line)
+License: What license is it under?
