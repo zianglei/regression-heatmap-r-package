@@ -218,9 +218,13 @@ pkg.env$data <- NA
   
   formulas_names <- names(formulas)
   # when other metrics are added, they also need to get a new name here!
-  formulas_names <- c(formulas_names, 'rSquared')
+  formulas_names_with_rSquared <- c(formulas_names, 'rSquared')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
-  names(result) <- formulas_names
+  if (length(data) == length(result))
+    names(result) <- formulas_names
+  else
+    names(result) <- formulas_names_with_rSquared
+  
   return(result);
 }
