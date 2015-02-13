@@ -221,7 +221,7 @@ pkg.env$data <- NA
   formulas_names_with_rSquared <- c(formulas_names, 'rSquared')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
-  if (length(formula) == length(result))
+  if (length(formulas) == length(result))
     names(result) <- formulas_names
   else
     names(result) <- formulas_names_with_rSquared
