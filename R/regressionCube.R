@@ -197,7 +197,7 @@ pkg.env$data <- NA
     # If binning fails, return null
     if(class(model) == "try-error") {
       message(paste0("'", current_formula_string, "' failed!"))
-      #current_formula['rSquared'] = 0;
+      current_formula['rSquared'] = 0;
     } else {
       if (dependent_class == 'numeric') {
         model_summary <- summary(model)
