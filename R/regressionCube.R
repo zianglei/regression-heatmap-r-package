@@ -4,9 +4,9 @@
 pkg.env <- new.env()
 pkg.env$data <- NA
 
-'load_dataset' <- function (csv_file, isURL=TRUE){ #, type_filepath) {
+'load_dataset' <- function (csv_file, isURL=TRUE, load_dictionary=FALSE){ #, type_filepath) {
   #csv_filepath <- "/Users/paul/Tresors/Regresson Cubes/js-html/prototype/data/breast_fat.csv"
-  #type_filepath <- "/Users/paul/Tresors/Regresson Cubes/js-html/prototype/data/dictionary.json"
+  type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary.json"
   if (isURL) {
     pkg.env$data <- read.csv(url(csv_file), header = TRUE)
     data <- read.csv(url(csv_file), header = TRUE)
@@ -15,26 +15,35 @@ pkg.env$data <- NA
     pkg.env$data <- read.csv(csv_file, header = TRUE)
     data <- read.csv(csv_file, header = TRUE)
   }
-  #   library(rjson)
-  #   dictionary <- fromJSON(file = type_filepath)
-  #   # Extract the variable types
-  #   variable_types = c()
-  #   variable_names <- names(data)
-  #   for (i in 1:length(data)) {
-  #     current_variable_name <- variable_names[[i]]
-  #     current_variable_dict <- dictionary[[current_variable_name]]
-  #     current_variable_type <- "factor"
-  #     if (!is.null(current_variable_dict))
-  #       if (current_variable_dict$type == "numerical")
-  #         current_variable_type <- "numeric"
-  #       else if (current_variable_dict$type == "ordinal" | current_variable_dict$type == "nominal")
-  #         current_variable_type <- "factor"
-  #       else if (current_variable_dict$type == "dichotomous")
-  #         current_variable_type <- "logical"
-  #     else
-  #       print(paste0(current_variable_name, " has no dictionary entry"))
-  #     variable_types <- c(variable_types, current_variable_type)
-  #   }
+  if (load_dictionary) {
+    library(rjson)
+    dictionary <- fromJSON(file = type_filepath)
+    # Extract the variable types
+    variable_types = c()
+    variable_names <- names(data)
+    for (i in 1:length(data)) {
+      current_variable_name <- variable_names[[i]]
+      current_variable_dict <- dictionary[[current_variable_name]]
+      current_variable_type <- "factor"
+      if (!is.null(current_variable_dict)) {
+        if (current_variable_dict$type == "numerical")
+          #current_variable_type <- "numeric"
+          data[[current_variable_name]] <- as.numeric(data[[current_variable_name]])
+        else if (current_variable_dict$type == "ordinal" | current_variable_dict$type == "nominal")
+          # current_variable_type <- "factor"
+          data[[current_variable_name]] <- as.factor(data[[current_variable_name]])
+        else if (current_variable_dict$type == "dichotomous") {
+          # current_variable_type <- "logical"
+          #print(current_variable_name)
+          #data[[current_variable_name]] <- as.logical.factor(data[[current_variable_name]])
+          data[[current_variable_name]] <- as.factor(data[[current_variable_name]])
+        }
+      }
+      else
+        print(paste0(current_variable_name, " has no dictionary entry"))
+      variable_types <- c(variable_types, current_variable_type)
+    }
+  }
   return(data)
 }
 
@@ -60,8 +69,37 @@ pkg.env$data <- NA
   return(c(formula(result_formula), dependent_variable, result_formula))
 }
 
+# Debugging function for testing, which variables put off the cfs analysis
+# http://blog.sciencenet.cn/blog-655584-625559.html
+'cfs_test' <- function(dataframe) {
+  library(RWeka)
+  error_dimensions <- c()
+  frame_names <- names(dataframe)
+  new_frame = data.frame(dataframe["som_groe"])
+  nombi=make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  for (i in 1:length(frame_names)) {
+    current_dimension <- frame_names[i]
+    print(paste0("Processing dimension ", current_dimension))
+    new_frame[current_dimension] <- data[current_dimension]
+    
+    model <- try(datbin <- nombi(som_groe ~., data=new_frame, control =Weka_control(
+      E="weka.attributeSelection.CfsSubsetEval ",
+      S="weka.attributeSelection.BestFirst -D 1 -N 5"
+    )), silent = FALSE)
+    
+    # If binning fails, reset value to null
+    if(class(model) == "try-error") {
+      print(paste0("Error at dimension ", current_dimension))
+      new_frame[current_dimension] <- NULL
+      error_dimensions <- c(error_dimensions, current_dimension)
+    }
+  }
+  return(error_dimensions)
+}
+
 # data <- load_dataset('/Users/paul/Desktop/patients-100k.csv', FALSE)
 # data <- load_dataset('/Users/paul/Desktop/breast_fat_small.csv', FALSE)
+# data <- load_dataset('/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/breast_fat.csv', FALSE)
 # operators = c('~', '+', '-');
 # variables = c('z', 'x', 'y');
 'performance_test' <- function() {

@@ -1,6 +1,6 @@
 # Installation
 - install devtools (`install.packages('devtools')`)
-- install rms package (`install.packages('rms')`)
+- install required packages (`install.packages(c('rms', 'rjson'))`)
 - install this package from github (`install_github('Powernap/regression-cube-r-package')`)
 
 # Required `R` packages
