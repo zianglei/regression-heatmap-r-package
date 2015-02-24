@@ -16,6 +16,7 @@ pkg.env$data <- NA
     pkg.env$data <- read.csv(csv_file, header = TRUE)
     data <- read.csv(csv_file, header = TRUE)
   }
+  
   if (load_dictionary) {
     library(rjson)
     dictionary <- fromJSON(file = type_filepath)
@@ -28,15 +29,10 @@ pkg.env$data <- NA
       current_variable_type <- "factor"
       if (!is.null(current_variable_dict)) {
         if (current_variable_dict$type == "numerical")
-          #current_variable_type <- "numeric"
           data[[current_variable_name]] <- as.numeric(data[[current_variable_name]])
         else if (current_variable_dict$type == "ordinal" | current_variable_dict$type == "nominal")
-          # current_variable_type <- "factor"
           data[[current_variable_name]] <- as.factor(data[[current_variable_name]])
         else if (current_variable_dict$type == "dichotomous") {
-          # current_variable_type <- "logical"
-          #print(current_variable_name)
-          #data[[current_variable_name]] <- as.logical.factor(data[[current_variable_name]])
           data[[current_variable_name]] <- as.factor(data[[current_variable_name]])
         }
       }
