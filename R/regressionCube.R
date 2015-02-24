@@ -70,6 +70,31 @@ pkg.env$data <- NA
   return(c(formula(result_formula), dependent_variable, result_formula))
 }
 
+# Calculates important varibles based on correlation based feature selection (CFS)
+# using the RWeka binding.
+# @param: data: input data frame
+# @param: dependent: name of the dependent variables
+# @return: data frame of important variables
+'correlation_based_feature_selection' <- function(data, dependent) {
+  library(RWeka)
+  # Create the Weka filter
+  attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  
+  target_formula <- as.formula(paste0(dependent, '~.'))
+  attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control =Weka_control(
+    E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
+    S="weka.attributeSelection.BestFirst -D 1 -N 5"
+  )), silent = FALSE)
+  
+  # Throw error when reduction fails!
+  if(class(attribute_selection_result) == "try-error") {
+    message(paste0("Correlation-based feature selection fails for ", dependent))
+    return()
+  }
+  
+  return(attribute_selection_result)
+}
+
 # Debugging function for testing, which variables put off the cfs analysis
 # http://blog.sciencenet.cn/blog-655584-625559.html
 'cfs_test' <- function(dataframe) {
@@ -89,12 +114,11 @@ pkg.env$data <- NA
     #  E="weka.attributeSelection.CfsSubsetEval ",
     #  S="weka.attributeSelection.BestFirst -D 1 -N 5"
     #)), silent = FALSE)
-    model <- try(attribute_selection(Age~., data=dataframe, na.action = na.pass, control =Weka_control(
+    model <- try(attribute_selection(Pain_Discomfort~., data=new_frame, na.action = na.pass, control =Weka_control(
       E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
       S="weka.attributeSelection.BestFirst -D 1 -N 5"
     )), silent = FALSE)
     
-    # If binning fails, reset value to null
     if(class(model) == "try-error") {
       print(paste0("Error at dimension ", current_dimension))
       new_frame[current_dimension] <- NULL
