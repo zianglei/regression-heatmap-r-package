@@ -95,39 +95,6 @@ pkg.env$data <- NA
   return(attribute_selection_result)
 }
 
-# Debugging function for testing, which variables put off the cfs analysis
-# http://blog.sciencenet.cn/blog-655584-625559.html
-'cfs_test' <- function(dataframe) {
-  library(RWeka)
-  error_dimensions <- c()
-  frame_names <- names(dataframe)
-  new_frame = data.frame(dataframe["Body_Weight"])
-  #nombi=make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
-  #attribute_evaluator <- RWeka::make_Weka_attribute_evaluator(name = "weka/attributeSelection/CfsSubsetEval")
-  attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
-  for (i in 1:length(frame_names)) {
-    current_dimension <- frame_names[i]
-    print(paste0("Processing dimension ", current_dimension))
-    new_frame[current_dimension] <- dataframe[current_dimension]
-    
-    #model <- try(nombi(Body_Weight~., data=new_frame,  control =Weka_control(
-    #  E="weka.attributeSelection.CfsSubsetEval ",
-    #  S="weka.attributeSelection.BestFirst -D 1 -N 5"
-    #)), silent = FALSE)
-    model <- try(attribute_selection(Pain_Discomfort~., data=new_frame, na.action = na.pass, control =Weka_control(
-      E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
-      S="weka.attributeSelection.BestFirst -D 1 -N 5"
-    )), silent = FALSE)
-    
-    if(class(model) == "try-error") {
-      print(paste0("Error at dimension ", current_dimension))
-      new_frame[current_dimension] <- NULL
-      error_dimensions <- c(error_dimensions, current_dimension)
-    }
-  }
-  return(error_dimensions)
-}
-
 # data <- load_dataset('/Users/paul/Desktop/patients-100k.csv', FALSE)
 # data <- load_dataset('/Users/paul/Desktop/breast_fat_small.csv', FALSE)
 # data <- load_dataset('/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/breast_fat.csv', FALSE)
