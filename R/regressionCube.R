@@ -6,7 +6,8 @@ pkg.env$data <- NA
 
 'load_dataset' <- function (csv_file, isURL=TRUE, load_dictionary=FALSE){ #, type_filepath) {
   #csv_filepath <- "/Users/paul/Tresors/Regresson Cubes/js-html/prototype/data/breast_fat.csv"
-  type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary.json"
+  #type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary.json"
+  type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary_new_names.json"
   if (isURL) {
     pkg.env$data <- read.csv(url(csv_file), header = TRUE)
     data <- read.csv(url(csv_file), header = TRUE)
@@ -75,15 +76,21 @@ pkg.env$data <- NA
   library(RWeka)
   error_dimensions <- c()
   frame_names <- names(dataframe)
-  new_frame = data.frame(dataframe["som_groe"])
-  nombi=make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  new_frame = data.frame(dataframe["Body_Weight"])
+  #nombi=make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  #attribute_evaluator <- RWeka::make_Weka_attribute_evaluator(name = "weka/attributeSelection/CfsSubsetEval")
+  attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
   for (i in 1:length(frame_names)) {
     current_dimension <- frame_names[i]
     print(paste0("Processing dimension ", current_dimension))
-    new_frame[current_dimension] <- data[current_dimension]
+    new_frame[current_dimension] <- dataframe[current_dimension]
     
-    model <- try(datbin <- nombi(som_groe ~., data=new_frame, control =Weka_control(
-      E="weka.attributeSelection.CfsSubsetEval ",
+    #model <- try(nombi(Body_Weight~., data=new_frame,  control =Weka_control(
+    #  E="weka.attributeSelection.CfsSubsetEval ",
+    #  S="weka.attributeSelection.BestFirst -D 1 -N 5"
+    #)), silent = FALSE)
+    model <- try(attribute_selection(Age~., data=dataframe, na.action = na.pass, control =Weka_control(
+      E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
       S="weka.attributeSelection.BestFirst -D 1 -N 5"
     )), silent = FALSE)
     
