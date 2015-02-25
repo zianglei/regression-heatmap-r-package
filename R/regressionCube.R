@@ -4,9 +4,6 @@
 pkg.env <- new.env()
 pkg.env$data <- NA
 
-library(rJava)
-library(RWeka)
-
 'load_dataset' <- function (csv_file, isURL=TRUE, load_dictionary=FALSE){ #, type_filepath) {
   #csv_filepath <- "/Users/paul/Tresors/Regresson Cubes/js-html/prototype/data/breast_fat.csv"
   #type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary.json"
@@ -75,8 +72,10 @@ library(RWeka)
 # @param: dependent: name of the dependent variables
 # @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
+  #library(rJava)
+  #library(RWeka)
   # Create the Weka filter
-  attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
   
   target_formula <- as.formula(paste0(dependent, '~.'))
   attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control =Weka_control(
