@@ -70,7 +70,7 @@ pkg.env$data <- NA
 # using the RWeka binding.
 # @param: data: input data frame
 # @param: dependent: name of the dependent variables
-# @return: data frame of important variables
+# @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
   library(RWeka)
   # Create the Weka filter
@@ -88,7 +88,7 @@ pkg.env$data <- NA
     return()
   }
   
-  return(attribute_selection_result)
+  return(colnames(attribute_selection_result))
 }
 
 # data <- load_dataset('/Users/paul/Desktop/patients-100k.csv', FALSE)
@@ -118,66 +118,6 @@ pkg.env$data <- NA
   #system.time(lm.fit(model_matrix, y = data$age))
   system.time(lm.fit(model.matrix(as.formula('age~gender+chd'), data), y = data$age))
   system.time(lm('age~gender+chd', data))
-}
-
-# This function should be deleted as the calculation is now formula based
-'r_squared_matrix' <- function(data, z, operators, variables, force_calculation = FALSE, use_fastLm = FALSE) {
-  # filename <- paste0("vardumps/goodness_of_fit_matrix_", z, ".Rdmped")
-  # if (file.exists(filename) && !force_calculation) {
-  #   load(file = filename)
-  #   return(goodness_of_fit_matrix)
-  # }
-  # data <- pkg.env$data
-  #print(operators)
-  #print(variables)
-  # Get Class for each group
-  variable_classes <- lapply(data, class)
-  variable_names <- colnames(data)
-  # Create result matrix
-  goodness_of_fit_matrix <- matrix(0, length(variable_names), length(variable_names))
-  row.names(goodness_of_fit_matrix) <- variable_names
-  colnames(goodness_of_fit_matrix) <- variable_names
-  # Class of z variable
-  dependent_class <- variable_classes[z]
-  # Iterate over all variables
-  #for (i in 2:2) {
-  for (i in 1:length(variable_names)) {
-    current_independent_variable1_name <- variable_names[[i]]
-    # Iterate over all other variables
-    for (j in 1:length(variable_names)) {
-      # No correlation of variables with each other
-      #if (i != j && i < j) {
-      if (i != j) {
-        current_independent_variable2_name <- variable_names[[j]]
-        # First element contains the formula, the second one the dependent variable
-        formula_result <- constuct_formula(variables, operators, current_independent_variable1_name, current_independent_variable2_name, z)
-        current_formula <- formula_result[[1]]
-        #current_formula <- formula('age~bmi+smoking')
-        dependent_class <- variable_classes[formula_result[[2]]]
-        #dependent_class <- 'numeric'
-        # If current class is numeric, apply Linear Regression
-        if (dependent_class == 'numeric')
-            model <- try(lm(formula = current_formula, data = data), silent = TRUE)
-        else
-          model <- try( rms::lrm(formula = current_formula, data = data), silent = TRUE)
-
-        # If binning fails, return null
-        if(class(model) == "try-error") {
-          message(paste0("'", formula_result[[3]], "' failed!"))
-        } else {
-          #coefficient <- model$coefficients[[2]]
-          if (dependent_class == 'numeric') {
-            model_summary <- summary(model)
-            goodness_of_fit_matrix[i,j] <- model_summary$r.squared
-          }
-          else
-            goodness_of_fit_matrix[i,j] <- model$stats[['R2']]
-        }
-      }
-    }
-  }
-  #save(list = c("goodness_of_fit_matrix"), file = filename)
-  return(goodness_of_fit_matrix)
 }
 
 # The function takes the formulas as input and iterates over them
@@ -211,7 +151,7 @@ pkg.env$data <- NA
 }
 
 # The function takes the formulas as input and iterates over them
-'r_squared_matrix_formula' <- function(data, formulas, parallel='true') {
+'r_squared_matrix_formula' <- function(data, formulas, parallel=TRUE) {
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   library(parallel)
   variable_classes <- lapply(data, class)
@@ -225,9 +165,11 @@ pkg.env$data <- NA
     else
       model <- try( rms::lrm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
     
-    # If binning fails, return null
+    # If calculation fails, return null
     if(class(model) == "try-error") {
       message(paste0("'", current_formula_string, "' failed!"))
+      # Set empty rSquared, otherwise the object will be assembled false
+      current_formula['rSquared'] <- ''
     } else {
       if (dependent_class == 'numeric') {
         model_summary <- summary(model)
