@@ -3,6 +3,7 @@
 # matrix <- r_squared_matrix(dependent = "gender")
 pkg.env <- new.env()
 pkg.env$data <- NA
+pkg.env$data_name <- NA
 
 'load_dataset' <- function (csv_file, isURL=TRUE, load_dictionary=FALSE){ #, type_filepath) {
   #csv_filepath <- "/Users/paul/Tresors/Regresson Cubes/js-html/prototype/data/breast_fat.csv"
@@ -16,6 +17,8 @@ pkg.env$data <- NA
     pkg.env$data <- read.csv(csv_file, header = TRUE)
     data <- read.csv(csv_file, header = TRUE)
   }
+  
+  pkg.env$data_name <- basename(csv_file);
   
   if (load_dictionary) {
     library(rjson)
@@ -64,6 +67,31 @@ pkg.env$data <- NA
       dependent_variable = current_variable
   }
   return(c(formula(result_formula), dependent_variable, result_formula))
+}
+
+# Calculates important varibles based on correlation based feature selection (CFS)
+# using the RWeka binding. It saves the results to be available faster later on!
+# @param: data: input data frame
+# @param: dependent: name of the dependent variables
+# @return: array of variable names
+'correlation_based_feature_selection_cached' <- function(data, dependent, data_id) {
+  # Check if there is a file containing this information
+  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
+  if (file.exists(filename)) {
+    load(file = filename)
+    if (!is.null(cfs[[dependent]])) {
+      return(cfs[[dependent]])
+    }
+  }
+  # If there is no cfs object (because there is no file to be loaded) create one
+  if (!exists('cfs'))
+    cfs <- list()
+  # Calculate the dependent variable
+  cfs[[dependent]] <- correlation_based_feature_selection(data, dependent)
+  dir.create('~/regressionCubeVardumps/')
+  dir.create(paste0("~/regressionCubeVardumps/", data_id))
+  save(list = c("cfs"), file = filename)
+  return (cfs[[dependent]])
 }
 
 # Calculates important varibles based on correlation based feature selection (CFS)
