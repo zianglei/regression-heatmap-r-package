@@ -73,9 +73,9 @@ pkg.env$data <- NA
 # @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
   #library(rJava)
-  #library(RWeka)
+  library(RWeka)
   # Create the Weka filter
-  attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
   
   target_formula <- as.formula(paste0(dependent, '~.'))
   attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control =Weka_control(
