@@ -72,7 +72,6 @@ pkg.env$data <- NA
 # @param: dependent: name of the dependent variables
 # @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
-  install.packages('RWeka')
   library(RWeka)
   # Create the Weka filter
   attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
