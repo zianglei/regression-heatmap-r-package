@@ -80,19 +80,15 @@ pkg.env <- new.env()
       return(cfs[[dependent]])
     }
   }
-  save(list=c('filename'), file = '~/1-file-load')
   # If there is no cfs object (because there is no file to be loaded) create one
   if (!exists('cfs'))
     cfs <- list()
   # Calculate the dependent variable
-  save(list=c('filename'), file = '~/2-pre-cfs')
   cfs[[dependent]] <- correlation_based_feature_selection(data, dependent)
-  save(list=c('filename'), file = '~/3-post-cfs')
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
   save(list = c("cfs"), file = filename)
-  save(list=c('filename'), file = '~/4-dir-create')
   return (cfs[[dependent]])
 }
 
@@ -103,29 +99,23 @@ pkg.env <- new.env()
 # @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
   #library(rJava)
-  save(list=c('dependent'), file = '~/2-1-preweka')
-  if (!exists('make_Weka_filter')) {
-    save(list=c('dependent'), file = '~/2-2-wekatrue')
-    library(RWeka)
-  }
-  save(list=c('dependent'), file = '~/2-3-postweka')
-  #library(RWeka)
+  #if (!exists('make_Weka_filter'))
+  detach('package:RWeka', unload=TRUE)
+  library(RWeka)
   # Create the Weka filter
   attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
-  save(list=c('dependent'), file = '~/2-4-create-filter')
   target_formula <- as.formula(paste0(dependent, '~.'))
+  # TODO: This kills the ubuntu server when called a second time
+  # ToDo trying unloading RWeka?
   attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control =Weka_control(
     E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
     S="weka.attributeSelection.BestFirst -D 1 -N 5"
   )), silent = FALSE)
-  save(list=c('dependent'), file = '~/2-5-attribute-selection')
   # Throw error when reduction fails!
   if(class(attribute_selection_result) == "try-error") {
     message(paste0("Correlation-based feature selection fails for ", dependent))
-    save(list=c('dependent'), file = '~/2-6-attribute-selection-fails')
     return()
   }
-  save(list=c('dependent'), file = '~/2-7-attribute-selection-success')
   return(colnames(attribute_selection_result))
 }
 
