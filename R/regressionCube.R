@@ -2,23 +2,19 @@
 # load_dataset("/Users/paul/Desktop/patients-100k.csv")
 # matrix <- r_squared_matrix(dependent = "gender")
 pkg.env <- new.env()
-pkg.env$data <- NA
-pkg.env$data_name <- NA
+#pkg.env$data <- NA
+#pkg.env$data_name <- NA
 
 'load_dataset' <- function (csv_file, isURL=TRUE, load_dictionary=FALSE){ #, type_filepath) {
   #csv_filepath <- "/Users/paul/Tresors/Regresson Cubes/js-html/prototype/data/breast_fat.csv"
   #type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary.json"
   type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary_new_names.json"
   if (isURL) {
-    pkg.env$data <- read.csv(url(csv_file), header = TRUE)
     data <- read.csv(url(csv_file), header = TRUE)
   }
   else {
-    pkg.env$data <- read.csv(csv_file, header = TRUE)
     data <- read.csv(csv_file, header = TRUE)
   }
-  
-  pkg.env$data_name <- basename(csv_file);
   
   if (load_dictionary) {
     library(rjson)
@@ -88,6 +84,7 @@ pkg.env$data_name <- NA
     cfs <- list()
   # Calculate the dependent variable
   cfs[[dependent]] <- correlation_based_feature_selection(data, dependent)
+  # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
   save(list = c("cfs"), file = filename)
@@ -180,12 +177,29 @@ pkg.env$data_name <- NA
 }
 
 # The function takes the formulas as input and iterates over them
-'r_squared_matrix_formula' <- function(data, formulas, parallel=TRUE) {
+'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE) {
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
+  
+  # Open the local formula array of the data set
+  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-formulas.Rdmped")
+  if (file.exists(filename)) {
+    load(file = filename)
+  }
+  # If there is no formula_storage object (because there is no file to be loaded) create one
+  if (!exists('formula_storage'))
+    formula_storage <- list()
+  
   library(parallel)
   variable_classes <- lapply(data, class)
   workerFunction <- function(current_formula) {
     current_formula_string <- current_formula[,'formula']
+    # Is there already an entry of this formula in the storage?
+    if (!is.null(formula_storage[[current_formula_string]])) {
+      # Attach all information derived from the storage 
+      current_formula['rSquared'] <- formula_storage[[current_formula_string]][['R2']]
+      # And return the object
+      return(current_formula)
+    }
     dependent_class <- variable_classes[current_formula[,'dependentVariable']]
     
     # If current class is numeric, apply Linear Regression
@@ -207,6 +221,7 @@ pkg.env$data_name <- NA
       else
         current_formula['rSquared'] <- model$stats[['R2']]
     }
+    # Return the formula
     return(current_formula)
   }
   # Convert the formula data frame into a list of entries
@@ -232,6 +247,19 @@ pkg.env$data_name <- NA
     names(result) <- formulas_names
   else
     names(result) <- formulas_names_with_rSquared
+  
+  # Fill the formula storage with the calculated information
+  for (i in 1:nrow(result)) {
+    current_formula_string <- as.character(result$formula[i])
+    formula_storage[[current_formula_string]] <- list()
+    formula_storage[[current_formula_string]][['R2']] <- as.character(result$rSquared[i])
+    #as.numeric(as.matrix(result$rSquared[i]))
+  }
+  
+  # Create directories for the dump and save it to disk
+  dir.create('~/regressionCubeVardumps/')
+  dir.create(paste0("~/regressionCubeVardumps/", data_id))
+  save(list = c("formula_storage"), file = filename)
   
   return(result);
 }
