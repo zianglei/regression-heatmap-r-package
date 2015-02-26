@@ -176,6 +176,22 @@ pkg.env <- new.env()
   return(formulas)
 }
 
+'remove_invalid_path_characters' <- function(path) {
+  #\ / : * ? " < > |
+  #?, *, +, and %.
+  path <- gsub("/", "slash", path)
+  path <- gsub(":", "dcolon", path)
+  path <- gsub("\\*", "asterisk", path)
+  path <- gsub("\\?", "questionmark", path)
+  path <- gsub("<", "smaller", path)
+  path <- gsub(">", "larger", path)
+  path <- gsub("\\|", "pipe", path)
+  path <- gsub("\\+", "plus", path)
+  path <- gsub("%", "percent", path)
+  path <- gsub("([\\])", "bslash", path)
+  return(path)
+}
+
 # This method caches the provided javascript object
 # to the disk if it is specified, if not, it attempts to load it
 # @param: r_squared: JS Object of R Squared matrix
@@ -183,7 +199,7 @@ pkg.env <- new.env()
 # @param: data_id: Data ID
 'cache_r_squared_matrix' <- function(r_squared, formula, data_id) {
   # TODO: Remove illegal characters from formula (:, >, ...)
-  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-", formula, ".Rdmpd")
+  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-", remove_invalid_path_characters(formula), ".Rdmpd")
   # If r_squared is provided, save it to the disk
   if (!missing(r_squared)) {
     save(list = c("r_squared"), file = filename)
