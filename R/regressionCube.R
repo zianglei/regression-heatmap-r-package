@@ -80,15 +80,19 @@ pkg.env <- new.env()
       return(cfs[[dependent]])
     }
   }
+  save(liste=c('filename'), file = '~/1-file-load')
   # If there is no cfs object (because there is no file to be loaded) create one
   if (!exists('cfs'))
     cfs <- list()
   # Calculate the dependent variable
+  save(liste=c('filename'), file = '~/2-pre-cfs')
   cfs[[dependent]] <- correlation_based_feature_selection(data, dependent)
+  save(liste=c('filename'), file = '~/3-post-cfs')
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
   save(list = c("cfs"), file = filename)
+  save(liste=c('filename'), file = '~/4-dir-create')
   return (cfs[[dependent]])
 }
 
