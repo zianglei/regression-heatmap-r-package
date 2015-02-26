@@ -99,8 +99,8 @@ pkg.env <- new.env()
 # @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
   #library(rJava)
-  #if (!exists('make_Weka_filter'))
-  detach('package:RWeka', unload=TRUE)
+  if (exists('make_Weka_filter'))
+    detach('package:RWeka', unload=TRUE)
   library(RWeka)
   # Create the Weka filter
   attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
