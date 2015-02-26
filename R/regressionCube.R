@@ -112,19 +112,20 @@ pkg.env <- new.env()
   #library(RWeka)
   # Create the Weka filter
   attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
-  
+  save(list=c('dependent'), file = '~/2-4-create-filter')
   target_formula <- as.formula(paste0(dependent, '~.'))
   attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control =Weka_control(
     E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
     S="weka.attributeSelection.BestFirst -D 1 -N 5"
   )), silent = FALSE)
-  
+  save(list=c('dependent'), file = '~/2-5-attribute-selection')
   # Throw error when reduction fails!
   if(class(attribute_selection_result) == "try-error") {
     message(paste0("Correlation-based feature selection fails for ", dependent))
+    save(list=c('dependent'), file = '~/2-6-attribute-selection-fails')
     return()
   }
-  
+  save(list=c('dependent'), file = '~/2-7-attribute-selection-success')
   return(colnames(attribute_selection_result))
 }
 
