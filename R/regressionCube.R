@@ -176,13 +176,37 @@ pkg.env <- new.env()
   return(formulas)
 }
 
+# This method caches the provided javascript object
+# to the disk if it is specified, if not, it attempts to load it
+# @param: r_squared: JS Object of R Squared matrix
+# @param: formula: Formula as string
+# @param: data_id: Data ID
+'cache_r_squared_matrix' <- function(r_squared, formula, data_id) {
+  # TODO: Remove illegal characters from formula (:, >, ...)
+  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-", formula, ".Rdmpd")
+  # If r_squared is provided, save it to the disk
+  if (!missing(r_squared)) {
+    save(list = c("r_squared"), file = filename)
+    return()
+  } else { # If not, attempt to load it
+    if (file.exists(filename)) {
+      # It exists, so load it up and return the value
+      load(file = filename)
+      return(r_squared)
+    } else {
+      # It could not be found, so return false
+      return(FALSE)
+    }
+  }
+}
+
 # The function takes the formulas as input and iterates over them
 'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE) {
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   #save(list = c("formulas", 'data', 'data_id'), file = '/Users/paul/Desktop/input.rtmp')
   
   # Open the local formula array of the data set
-  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-formulas.Rdmped")
+  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-formulas.Rdmpd")
   if (file.exists(filename)) {
     load(file = filename)
   }
