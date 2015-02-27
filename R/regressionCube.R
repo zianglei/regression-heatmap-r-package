@@ -221,15 +221,15 @@ pkg.env <- new.env()
 
 # The function takes the formulas as input and iterates over them
 'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE) {
-  save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
+  #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   #save(list = c("formulas", 'data', 'data_id'), file = '/Users/paul/Desktop/input.rtmp')
   
   # Open the local formula array of the data set
   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-formulas.Rdmpd")
-  if (file.exists(filename)) {
-    load(file = filename)
-  }
+#   if (file.exists(filename)) {
+#     load(file = filename)
+#   }
   # If there is no formula_storage object (because there is no file to be loaded) create one
   if (!exists('formula_storage'))
     formula_storage <- list()
@@ -304,7 +304,7 @@ pkg.env <- new.env()
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
-  save(list = c("formula_storage"), file = filename)
+  #save(list = c("formula_storage"), file = filename)
   
   return(result);
 }
