@@ -69,8 +69,9 @@ pkg.env <- new.env()
 # using the RWeka binding. It saves the results to be available faster later on!
 # @param: data: input data frame
 # @param: dependent: name of the dependent variables
+# @param: maximum_features: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection_cached' <- function(data, dependent, data_id) {
+'correlation_based_feature_selection_cached' <- function(data, dependent, data_id, maximum_features = 60) {
   #save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
   # Check if there is a file containing this information
   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
@@ -84,7 +85,7 @@ pkg.env <- new.env()
   if (!exists('cfs'))
     cfs <- list()
   # Calculate the dependent variable
-  cfs[[dependent]] <- correlation_based_feature_selection(data, dependent)
+  cfs[[dependent]] <- correlation_based_feature_selection(data, dependent, maximum_features)
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
@@ -96,8 +97,9 @@ pkg.env <- new.env()
 # using the RWeka binding.
 # @param: data: input data frame
 # @param: dependent: name of the dependent variables
+# @param: maximum: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection' <- function(data, dependent) {
+'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 60) {
   #library(rJava)
   # Create the Weka filter
   attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
@@ -115,7 +117,10 @@ pkg.env <- new.env()
   }
   # Limit the maximum number of columns to 60
   columns <- colnames(attribute_selection_result)
-  return(columns[1:60])
+  if (length(columns) > maximum_features)
+    return(columns[1:maximum_features])
+  else
+    return(columns)
 }
 
 # data <- load_dataset('/Users/paul/Desktop/patients-100k.csv', FALSE)
