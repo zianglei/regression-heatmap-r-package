@@ -71,7 +71,7 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @return: array of variable names
 'correlation_based_feature_selection_cached' <- function(data, dependent, data_id) {
-  save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
+  #save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
   # Check if there is a file containing this information
   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
   if (file.exists(filename)) {
@@ -217,7 +217,7 @@ pkg.env <- new.env()
 
 # The function takes the formulas as input and iterates over them
 'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE) {
-  save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
+  #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   #save(list = c("formulas", 'data', 'data_id'), file = '/Users/paul/Desktop/input.rtmp')
   
