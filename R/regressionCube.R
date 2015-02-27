@@ -73,13 +73,13 @@ pkg.env <- new.env()
 'correlation_based_feature_selection_cached' <- function(data, dependent, data_id) {
   save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
   # Check if there is a file containing this information
-  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
-  if (file.exists(filename)) {
-    load(file = filename)
-    if (!is.null(cfs[[dependent]])) {
-      return(cfs[[dependent]])
-    }
-  }
+#   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
+#   if (file.exists(filename)) {
+#     load(file = filename)
+#     if (!is.null(cfs[[dependent]])) {
+#       return(cfs[[dependent]])
+#     }
+#   }
   # If there is no cfs object (because there is no file to be loaded) create one
   if (!exists('cfs'))
     cfs <- list()
@@ -99,8 +99,9 @@ pkg.env <- new.env()
 # @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
   #library(rJava)
-  if (exists('make_Weka_filter'))
+  if (exists('make_Weka_filter')) {
     detach('package:RWeka', unload=TRUE)
+  }
   library(RWeka)
   # Create the Weka filter
   attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
