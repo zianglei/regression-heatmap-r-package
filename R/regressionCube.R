@@ -71,7 +71,7 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @return: array of variable names
 'correlation_based_feature_selection_cached' <- function(data, dependent, data_id) {
-  save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
+  #save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
   # Check if there is a file containing this information
 #   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
 #   if (file.exists(filename)) {
@@ -88,7 +88,7 @@ pkg.env <- new.env()
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
-  save(list = c("cfs"), file = filename)
+  #save(list = c("cfs"), file = filename)
   return (cfs[[dependent]])
 }
 
