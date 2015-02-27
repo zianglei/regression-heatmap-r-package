@@ -71,15 +71,15 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @return: array of variable names
 'correlation_based_feature_selection_cached' <- function(data, dependent, data_id) {
-  #save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
+  save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
   # Check if there is a file containing this information
-#   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
-#   if (file.exists(filename)) {
-#     load(file = filename)
-#     if (!is.null(cfs[[dependent]])) {
-#       return(cfs[[dependent]])
-#     }
-#   }
+  filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
+  if (file.exists(filename)) {
+    load(file = filename)
+    if (!is.null(cfs[[dependent]])) {
+      return(cfs[[dependent]])
+    }
+  }
   # If there is no cfs object (because there is no file to be loaded) create one
   if (!exists('cfs'))
     cfs <- list()
@@ -88,7 +88,7 @@ pkg.env <- new.env()
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
-  #save(list = c("cfs"), file = filename)
+  save(list = c("cfs"), file = filename)
   return (cfs[[dependent]])
 }
 
@@ -99,16 +99,12 @@ pkg.env <- new.env()
 # @return: array of variable names
 'correlation_based_feature_selection' <- function(data, dependent) {
   #library(rJava)
-  if (exists('make_Weka_filter')) {
-    detach('package:RWeka', unload=TRUE)
-  }
-  library(RWeka)
   # Create the Weka filter
-  attribute_selection <- make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
   target_formula <- as.formula(paste0(dependent, '~.'))
   # TODO: This kills the ubuntu server when called a second time
   # ToDo trying unloading RWeka?
-  attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control =Weka_control(
+  attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control=RWeka::Weka_control(
     E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
     S="weka.attributeSelection.BestFirst -D 1 -N 5"
   )), silent = FALSE)
@@ -221,15 +217,15 @@ pkg.env <- new.env()
 
 # The function takes the formulas as input and iterates over them
 'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE) {
-  #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
+  save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   #save(list = c("formulas", 'data', 'data_id'), file = '/Users/paul/Desktop/input.rtmp')
   
   # Open the local formula array of the data set
   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-formulas.Rdmpd")
-#   if (file.exists(filename)) {
-#     load(file = filename)
-#   }
+  if (file.exists(filename)) {
+    load(file = filename)
+  }
   # If there is no formula_storage object (because there is no file to be loaded) create one
   if (!exists('formula_storage'))
     formula_storage <- list()
@@ -304,7 +300,7 @@ pkg.env <- new.env()
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
-  #save(list = c("formula_storage"), file = filename)
+  save(list = c("formula_storage"), file = filename)
   
   return(result);
 }
