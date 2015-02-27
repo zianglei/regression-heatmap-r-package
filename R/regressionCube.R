@@ -113,7 +113,9 @@ pkg.env <- new.env()
     message(paste0("Correlation-based feature selection fails for ", dependent))
     return()
   }
-  return(colnames(attribute_selection_result))
+  # Limit the maximum number of columns to 60
+  columns <- colnames(attribute_selection_result)
+  return(columns[1:60])
 }
 
 # data <- load_dataset('/Users/paul/Desktop/patients-100k.csv', FALSE)
