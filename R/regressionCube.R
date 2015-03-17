@@ -249,6 +249,7 @@ pkg.env <- new.env()
     if (!is.null(formula_storage[[current_formula_string]])) {
       # Attach all information derived from the storage 
       current_formula['rSquared'] <- formula_storage[[current_formula_string]][['R2']]
+      current_formula['confidenceIntervals'] <- formula_storage[[current_formula_string]][['confidenceIntervals']]
       # And return the object
       return(current_formula)
     }
@@ -315,6 +316,7 @@ pkg.env <- new.env()
     current_formula_string <- as.character(result$formula[i])
     formula_storage[[current_formula_string]] <- list()
     formula_storage[[current_formula_string]][['R2']] <- as.character(result$rSquared[i])
+    formula_storage[[current_formula_string]][['confidenceIntervals']] <- as.character(result$confidenceIntervals[i])
     #as.numeric(as.matrix(result$rSquared[i]))
   }
   
