@@ -104,6 +104,9 @@ pkg.env <- new.env()
 'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 60) {
   #library(rJava)
   # Create the Weka filter
+  #cfs.data <- data
+  #cfs.dependent <- dependent
+  #save(list = c("cfs.data", 'cfs.dependent'), file = '/Users/paul/Desktop/cfsinput.rtmp')
   attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
   target_formula <- as.formula(paste0(dependent, '~.'))
   # TODO: This kills the ubuntu server when called a second time
@@ -309,6 +312,6 @@ pkg.env <- new.env()
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
   save(list = c("formula_storage"), file = filename)
-  
+  #save(list = c("result"), file = '/Users/paul/Desktop/result.rtmp')
   return(result);
 }
