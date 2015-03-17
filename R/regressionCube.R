@@ -10,10 +10,12 @@ pkg.env <- new.env()
   #type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary.json"
   type_filepath <- "/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/data/dictionary_new_names.json"
   if (isURL) {
-    data <- read.csv(url(csv_file), header = TRUE)
+    # Treat empty elements as NA
+    data <- read.csv(url(csv_file), header = TRUE, na.strings="")
   }
   else {
-    data <- read.csv(csv_file, header = TRUE)
+    # Treat empty elements as NA
+    data <- read.csv(csv_file, header = TRUE, , na.strings="")
   }
   
   if (load_dictionary) {
@@ -105,7 +107,6 @@ pkg.env <- new.env()
   attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
   target_formula <- as.formula(paste0(dependent, '~.'))
   # TODO: This kills the ubuntu server when called a second time
-  # ToDo trying unloading RWeka?
   attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control=RWeka::Weka_control(
     E="weka.attributeSelection.CfsSubsetEval -P 1 -E 1",
     S="weka.attributeSelection.BestFirst -D 1 -N 5"
