@@ -265,13 +265,23 @@ pkg.env <- new.env()
       message(paste0("'", current_formula_string, "' failed!"))
       # Set empty rSquared, otherwise the object will be assembled false
       current_formula['rSquared'] <- ''
+      current_formula['confidenceIntervals'] <- ''
     } else {
       if (dependent_class == 'numeric') {
         model_summary <- summary(model)
         current_formula['rSquared'] <- model_summary$r.squared
+        #confintTable <- capture.output(pander(confint(model)))
+        #confintTable <- paste(confintTable, collapse = "<br>")
+        confinterval <- confint(model)
+        confintTable <- print(xtable::xtable(confinterval), type = "html")
+        current_formula['confidenceIntervals'] <- confintTable
       }
-      else
+      else {
         current_formula['rSquared'] <- model$stats[['R2']]
+        #confint <- summary(model)[ , c("Lower 0.95", "Upper 0.95")]
+        #confintTable <- print(xtable::xtable(confint), type = "html")
+        current_formula['confidenceIntervals'] <- ' '
+      }
     }
     # Return the formula
     return(current_formula)
@@ -289,7 +299,7 @@ pkg.env <- new.env()
   # Reconstruct a data frame from the result list
   formulas_names <- names(formulas)
   # when other metrics are added, they also need to get a new name here!
-  formulas_names_with_rSquared <- c(formulas_names, 'rSquared')
+  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
   # If no R-squared values are found at all during the calulcation, simply assigning
