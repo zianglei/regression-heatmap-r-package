@@ -248,8 +248,10 @@ pkg.env <- new.env()
     # Is there already an entry of this formula in the storage?
     if (!is.null(formula_storage[[current_formula_string]])) {
       # Attach all information derived from the storage 
+      # when other metrics are added, they also need to get a new name here!
       current_formula['rSquared'] <- formula_storage[[current_formula_string]][['R2']]
       current_formula['confidenceIntervals'] <- formula_storage[[current_formula_string]][['confidenceIntervals']]
+      current_formula['coefficients'] <- formula_storage[[current_formula_string]][['coefficients']]
       # And return the object
       return(current_formula)
     }
@@ -267,21 +269,22 @@ pkg.env <- new.env()
       # Set empty rSquared, otherwise the object will be assembled false
       current_formula['rSquared'] <- ''
       current_formula['confidenceIntervals'] <- ''
+      current_formula['coefficients'] <- ''
     } else {
       if (dependent_class == 'numeric') {
         model_summary <- summary(model)
         current_formula['rSquared'] <- model_summary$r.squared
-        #confintTable <- capture.output(pander(confint(model)))
-        #confintTable <- paste(confintTable, collapse = "<br>")
         confinterval <- confint(model)
         confintTable <- print(xtable::xtable(confinterval), type = "html")
         current_formula['confidenceIntervals'] <- confintTable
+        current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
       }
       else {
         current_formula['rSquared'] <- model$stats[['R2']]
         #confint <- summary(model)[ , c("Lower 0.95", "Upper 0.95")]
         #confintTable <- print(xtable::xtable(confint), type = "html")
-        current_formula['confidenceIntervals'] <- ' '
+        current_formula['confidenceIntervals'] <- ''
+        current_formula['coefficients'] <- print(xtable::xtable(data.frame(model$coefficients)), type = "html")
       }
     }
     # Return the formula
@@ -300,7 +303,7 @@ pkg.env <- new.env()
   # Reconstruct a data frame from the result list
   formulas_names <- names(formulas)
   # when other metrics are added, they also need to get a new name here!
-  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals')
+  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals', 'coefficients')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
   # If no R-squared values are found at all during the calulcation, simply assigning
@@ -312,11 +315,13 @@ pkg.env <- new.env()
     names(result) <- formulas_names_with_rSquared
   
   # Fill the formula storage with the calculated information
+  # when other metrics are added, they also need to get a new name here!
   for (i in 1:nrow(result)) {
     current_formula_string <- as.character(result$formula[i])
     formula_storage[[current_formula_string]] <- list()
     formula_storage[[current_formula_string]][['R2']] <- as.character(result$rSquared[i])
     formula_storage[[current_formula_string]][['confidenceIntervals']] <- as.character(result$confidenceIntervals[i])
+    formula_storage[[current_formula_string]][['coefficients']] <- as.character(result$confidenceIntervals[i])
     #as.numeric(as.matrix(result$rSquared[i]))
   }
   

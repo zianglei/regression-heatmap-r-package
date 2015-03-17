@@ -7,4 +7,4 @@ Author: Paul Klemm
 Maintainer: Paul Klemm <paul.klemm@googlemail.com>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
-Imports: parallel, RWeka, rms, ascii, pander
+Imports: parallel, RWeka, rms, xtable
