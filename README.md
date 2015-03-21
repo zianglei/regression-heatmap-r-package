@@ -55,3 +55,5 @@ Old keys for the machine in the ssh client need to be replaced by running `ssh-k
 I had trouble running x11vnc under Gnome, so I've installed XFCE through `sudo apt-get install xubuntu-desktop gksu leafpad synaptic` and chose the `xfce` session at login (through the ubuntu logo).
 
 **This repository is licensed under [Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/)** (see LICENCE.md)
+
+I will change the licence to [http://choosealicense.com/licenses/mit/](MIT) as soon as the associated paper gets accepted.
