@@ -101,7 +101,7 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @param: maximum: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 60) {
+'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 40) {
   #library(rJava)
   # Create the Weka filter
   #cfs.data <- data
@@ -119,7 +119,7 @@ pkg.env <- new.env()
     message(paste0("Correlation-based feature selection fails for ", dependent))
     return()
   }
-  # Limit the maximum number of columns to 60
+  # Limit the maximum number of columns to 40
   columns <- colnames(attribute_selection_result)
   if (length(columns) > maximum_features)
     return(columns[1:maximum_features])
@@ -226,8 +226,22 @@ pkg.env <- new.env()
   }
 }
 
+'get_dependent_feature_from_formula' <- function(formula_string) {
+  tilde_index <- regexpr("~", formula_string)
+  dependent <- substr(formula_string, 0, tilde_index - 1)
+  # Remove whitespaces
+  dependent <- gsub("^\\s+|\\s+$", "", dependent)
+  return(dependent)
+}
+
+'as_html_table' <- function(to_html) {
+  result_table <- as.data.frame(to_html)
+  result_table <- print(xtable::xtable(result_table), type = "html")
+  return(result_table)
+}
+
 # The function takes the formulas as input and iterates over them
-'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE) {
+'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE, use_median_regession = TRUE) {
   #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   #save(list = c("formulas", 'data', 'data_id'), file = '/Users/paul/Desktop/input.rtmp')
@@ -241,7 +255,15 @@ pkg.env <- new.env()
   if (!exists('formula_storage'))
     formula_storage <- list()
   
-  library(parallel)
+  if (use_median_regession) {
+    library(parallel)
+    library(quantreg)
+  } else {
+    library(parallel)
+  }
+  
+  rho <- function(u,tau=.5)u*(tau - (u < 0))
+  
   variable_classes <- lapply(data, class)
   workerFunction <- function(current_formula) {
     current_formula_string <- current_formula[,'formula']
@@ -258,10 +280,14 @@ pkg.env <- new.env()
     dependent_class <- variable_classes[current_formula[,'dependentVariable']]
     
     # If current class is numeric, apply Linear Regression
-    if (dependent_class == 'numeric')
-      model <- try(lm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
-    else
+    if (dependent_class == 'numeric') {
+      if (use_median_regession)
+        model <- try(rq(formula = as.formula(current_formula_string), data = data, tau = 0.5), silent = TRUE)
+      else
+        model <- try(lm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
+    } else {
       model <- try( rms::lrm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
+    }
     
     # If calculation fails, return null
     if(class(model) == "try-error") {
@@ -272,12 +298,23 @@ pkg.env <- new.env()
       current_formula['coefficients'] <- ''
     } else {
       if (dependent_class == 'numeric') {
-        model_summary <- summary(model)
-        current_formula['rSquared'] <- model_summary$r.squared
-        confinterval <- confint(model)
-        confintTable <- print(xtable::xtable(confinterval), type = "html")
-        current_formula['confidenceIntervals'] <- confintTable
-        current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
+        if (use_median_regession) {
+          # Calculate R^2 from median regression
+          # http://stackoverflow.com/a/27510106/2274058
+          current_dependent_feature <- get_dependent_feature_from_formula(current_formula_string)
+          model_only_intercepts <- rq(as.formula(paste0(current_dependent_feature, '~1')), tau=0.5, data=data)
+          
+          current_formula['rSquared'] <-  1 - model$rho/model_only_intercepts$rho
+          current_formula['confidenceIntervals'] <- "Not available"
+          current_formula['coefficients'] <- as_html_table(model$coefficients)
+        } else {
+          model_summary <- summary(model)
+          current_formula['rSquared'] <- model_summary$r.squared
+          confinterval <- confint(model)
+          confintTable <- print(xtable::xtable(confinterval), type = "html")
+          current_formula['confidenceIntervals'] <- confintTable
+          current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
+        }
       }
       else {
         current_formula['rSquared'] <- model$stats[['R2']]
