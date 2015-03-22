@@ -262,7 +262,7 @@ pkg.env <- new.env()
     library(parallel)
   }
   
-  rho <- function(u,tau=.5)u*(tau - (u < 0))
+  #rho <- function(u,tau=.5)u*(tau - (u < 0))
   
   variable_classes <- lapply(data, class)
   workerFunction <- function(current_formula) {
@@ -273,6 +273,7 @@ pkg.env <- new.env()
       # when other metrics are added, they also need to get a new name here!
       current_formula['rSquared'] <- formula_storage[[current_formula_string]][['R2']]
       current_formula['confidenceIntervals'] <- formula_storage[[current_formula_string]][['confidenceIntervals']]
+      current_formula['regressionType'] <- formula_storage[[current_formula_string]][['regressionType']]
       current_formula['coefficients'] <- formula_storage[[current_formula_string]][['coefficients']]
       # And return the object
       return(current_formula)
@@ -295,6 +296,7 @@ pkg.env <- new.env()
       # Set empty rSquared, otherwise the object will be assembled false
       current_formula['rSquared'] <- ''
       current_formula['confidenceIntervals'] <- ''
+      current_formula['regressionType'] <- ''
       current_formula['coefficients'] <- ''
     } else {
       if (dependent_class == 'numeric') {
@@ -306,6 +308,7 @@ pkg.env <- new.env()
           
           current_formula['rSquared'] <-  1 - model$rho/model_only_intercepts$rho
           current_formula['confidenceIntervals'] <- "Not available"
+          current_formula['regressionType'] <- 'median'
           current_formula['coefficients'] <- as_html_table(model$coefficients)
         } else {
           model_summary <- summary(model)
@@ -313,6 +316,7 @@ pkg.env <- new.env()
           confinterval <- confint(model)
           confintTable <- print(xtable::xtable(confinterval), type = "html")
           current_formula['confidenceIntervals'] <- confintTable
+          current_formula['regressionType'] <- 'linear'
           current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
         }
       }
@@ -321,6 +325,7 @@ pkg.env <- new.env()
         #confint <- summary(model)[ , c("Lower 0.95", "Upper 0.95")]
         #confintTable <- print(xtable::xtable(confint), type = "html")
         current_formula['confidenceIntervals'] <- ''
+        current_formula['regressionType'] <- 'logistic'
         current_formula['coefficients'] <- print(xtable::xtable(data.frame(model$coefficients)), type = "html")
       }
     }
@@ -340,7 +345,7 @@ pkg.env <- new.env()
   # Reconstruct a data frame from the result list
   formulas_names <- names(formulas)
   # when other metrics are added, they also need to get a new name here!
-  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals', 'coefficients')
+  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals', 'regressionType', 'coefficients')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
   # If no R-squared values are found at all during the calulcation, simply assigning
@@ -358,7 +363,8 @@ pkg.env <- new.env()
     formula_storage[[current_formula_string]] <- list()
     formula_storage[[current_formula_string]][['R2']] <- as.character(result$rSquared[i])
     formula_storage[[current_formula_string]][['confidenceIntervals']] <- as.character(result$confidenceIntervals[i])
-    formula_storage[[current_formula_string]][['coefficients']] <- as.character(result$confidenceIntervals[i])
+    formula_storage[[current_formula_string]][['regressionType']] <- as.character(result$regressionType[i])
+    formula_storage[[current_formula_string]][['coefficients']] <- as.character(result$coefficients[i])
     #as.numeric(as.matrix(result$rSquared[i]))
   }
   
