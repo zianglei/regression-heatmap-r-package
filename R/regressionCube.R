@@ -241,7 +241,7 @@ pkg.env <- new.env()
 }
 
 # The function takes the formulas as input and iterates over them
-'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE, use_median_regession = TRUE) {
+'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE, use_median_regession = FALSE) {
   #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   #save(list = c("formulas", 'data', 'data_id'), file = '/Users/paul/Desktop/input.rtmp')
