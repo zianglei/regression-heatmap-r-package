@@ -101,7 +101,7 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @param: maximum: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 40) {
+'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 60) {
   #library(rJava)
   # Create the Weka filter
   #cfs.data <- data
@@ -262,7 +262,14 @@ pkg.env <- new.env()
     library(parallel)
   }
   
-  #rho <- function(u,tau=.5)u*(tau - (u < 0))
+  # Create NA count data structure
+  not_na_count <- list()
+  dimension_names <- names(data)
+  number_rows <- nrow(data)
+  for (i in 1:length(data)) {
+    current_dimension <- dimension_names[i]
+    not_na_count[current_dimension] <- number_rows - length(which(is.na(data[current_dimension])))
+  }
   
   variable_classes <- lapply(data, class)
   workerFunction <- function(current_formula) {
@@ -275,19 +282,21 @@ pkg.env <- new.env()
       current_formula['confidenceIntervals'] <- formula_storage[[current_formula_string]][['confidenceIntervals']]
       current_formula['regressionType'] <- formula_storage[[current_formula_string]][['regressionType']]
       current_formula['coefficients'] <- formula_storage[[current_formula_string]][['coefficients']]
+      current_formula['featureCount'] <- formula_storage[[current_formula_string]][['featureCount']]
       # And return the object
       return(current_formula)
     }
     dependent_class <- variable_classes[current_formula[,'dependentVariable']]
     
+    current_formula_converted <- as.formula(current_formula_string)
     # If current class is numeric, apply Linear Regression
     if (dependent_class == 'numeric') {
       if (use_median_regession)
-        model <- try(rq(formula = as.formula(current_formula_string), data = data, tau = 0.5), silent = TRUE)
+        model <- try(rq(formula = current_formula_converted, data = data, tau = 0.5), silent = TRUE)
       else
-        model <- try(lm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
+        model <- try(lm(formula = current_formula_converted, data = data), silent = TRUE)
     } else {
-      model <- try( rms::lrm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
+      model <- try( rms::lrm(formula = current_formula_converted, data = data), silent = TRUE)
     }
     
     # If calculation fails, return null
@@ -312,12 +321,23 @@ pkg.env <- new.env()
           current_formula['coefficients'] <- as_html_table(model$coefficients)
         } else {
           model_summary <- summary(model)
-          current_formula['rSquared'] <- model_summary$r.squared
-          confinterval <- confint(model)
-          confintTable <- print(xtable::xtable(confinterval), type = "html")
-          current_formula['confidenceIntervals'] <- confintTable
-          current_formula['regressionType'] <- 'linear'
-          current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
+          # Only add if model is valid
+          coefficient_length <- length(model_summary$coefficients[,3])
+          coefficient_na_length <- length(which(is.na(model_summary$coefficients[,3])))
+          if (coefficient_length != coefficient_na_length) {
+            # Add the respective values
+            current_formula['rSquared'] <- model_summary$r.squared
+            confinterval <- confint(model)
+            confintTable <- print(xtable::xtable(confinterval), type = "html")
+            current_formula['confidenceIntervals'] <- confintTable
+            current_formula['regressionType'] <- 'linear'
+            current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
+          } else {
+            current_formula['rSquared'] <- ''
+            current_formula['confidenceIntervals'] <- ''
+            current_formula['regressionType'] <- ''
+            current_formula['coefficients'] <- ''
+          }
         }
       }
       else {
@@ -329,6 +349,14 @@ pkg.env <- new.env()
         current_formula['coefficients'] <- print(xtable::xtable(data.frame(model$coefficients)), type = "html")
       }
     }
+    # Append count of all features
+    formula_features <- all.vars(current_formula_converted)
+    feature_number_count <- list()
+    for (i in 1:length(formula_features)) {
+      current_formula_feature <- formula_features[i]
+      feature_number_count[current_formula_feature] <- not_na_count[current_formula_feature]
+    }
+    current_formula['featureCount'] <- as_html_table(feature_number_count)
     # Return the formula
     return(current_formula)
   }
@@ -344,8 +372,8 @@ pkg.env <- new.env()
   
   # Reconstruct a data frame from the result list
   formulas_names <- names(formulas)
-  # when other metrics are added, they also need to get a new name here!
-  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals', 'regressionType', 'coefficients')
+  # when other metrics are added, they also need to get a new name here! The order counts!
+  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals', 'regressionType', 'coefficients', 'featureCount')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
   # If no R-squared values are found at all during the calulcation, simply assigning
@@ -365,6 +393,7 @@ pkg.env <- new.env()
     formula_storage[[current_formula_string]][['confidenceIntervals']] <- as.character(result$confidenceIntervals[i])
     formula_storage[[current_formula_string]][['regressionType']] <- as.character(result$regressionType[i])
     formula_storage[[current_formula_string]][['coefficients']] <- as.character(result$coefficients[i])
+    formula_storage[[current_formula_string]][['featureCount']] <- as.character(result$featureCount[i])
     #as.numeric(as.matrix(result$rSquared[i]))
   }
   
