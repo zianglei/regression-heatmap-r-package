@@ -261,10 +261,8 @@ pkg.env <- new.env()
     load(file = filename)
   }
   # If there is no formula_storage object (because there is no file to be loaded) create one
-  if (!exists('formula_storage')) {
-    save(list = c("filename"), file = '~/newStorage.test')
+  if (!exists('formula_storage'))
     formula_storage <- list()
-  }
   
   if (use_median_regession) {
     library(parallel)
