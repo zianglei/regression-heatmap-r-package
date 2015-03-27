@@ -240,6 +240,15 @@ pkg.env <- new.env()
   return(result_table)
 }
 
+# Helper function, not used through the server, may be deleted later on
+'remove_empty_variables' <- function(data) {
+  for (i in length(data):1)
+    if (nrow(data[i]) - length(which(is.na(data[i]))) == 0)
+      data[i] <- NULL
+  
+  return(data)
+}
+
 # The function takes the formulas as input and iterates over them
 'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE, use_median_regession = FALSE) {
   #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
@@ -252,8 +261,10 @@ pkg.env <- new.env()
     load(file = filename)
   }
   # If there is no formula_storage object (because there is no file to be loaded) create one
-  if (!exists('formula_storage'))
+  if (!exists('formula_storage')) {
+    save(list = c("filename"), file = '~/newStorage.test')
     formula_storage <- list()
+  }
   
   if (use_median_regession) {
     library(parallel)
