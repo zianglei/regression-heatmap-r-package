@@ -73,7 +73,7 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @param: maximum_features: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection_cached' <- function(data, dependent, data_id, maximum_features = 30) {
+'correlation_based_feature_selection_cached' <- function(data, dependent, data_id, maximum_features = 20) {
   #save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
   # Check if there is a file containing this information
   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
@@ -101,7 +101,7 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @param: maximum: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 30) {
+'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 20) {
   #library(rJava)
   # Create the Weka filter
   #cfs.data <- data
@@ -410,7 +410,7 @@ pkg.env <- new.env()
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))
-  save(list = c("formula_storage"), file = filename)
+  #save(list = c("formula_storage"), file = filename)
   #save(list = c("result"), file = '/Users/paul/Desktop/result.rtmp')
   return(result);
 }
