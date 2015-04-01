@@ -17,7 +17,7 @@ pkg.env <- new.env()
     # Treat empty elements as NA
     data <- read.csv(csv_file, header = TRUE, , na.strings="")
   }
-  
+
   if (load_dictionary) {
     library(rjson)
     dictionary <- fromJSON(file = type_filepath)
@@ -60,7 +60,7 @@ pkg.env <- new.env()
       result_formula <- paste0(result_formula, current_variable, operators[[i]])
     else
       result_formula <- paste0(result_formula, current_variable)
-    
+
     if (i == 1)
       dependent_variable = current_variable
   }
@@ -73,7 +73,7 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @param: maximum_features: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection_cached' <- function(data, dependent, data_id, maximum_features = 20) {
+'correlation_based_feature_selection_cached' <- function(data, dependent, data_id, maximum_features = 40) {
   #save(list = c('data', 'dependent', 'data_id'), file = '~/correlation_input')
   # Check if there is a file containing this information
   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-cfs.Rdmped")
@@ -101,13 +101,13 @@ pkg.env <- new.env()
 # @param: dependent: name of the dependent variables
 # @param: maximum: maximum number of features returned
 # @return: array of variable names
-'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 20) {
+'correlation_based_feature_selection' <- function(data, dependent, maximum_features = 40) {
   #library(rJava)
   # Create the Weka filter
   #cfs.data <- data
   #cfs.dependent <- dependent
   #save(list = c("cfs.data", 'cfs.dependent'), file = '/Users/paul/Desktop/cfsinput.rtmp')
-  attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection") 
+  attribute_selection <- RWeka::make_Weka_filter("weka/filters/supervised/attribute/AttributeSelection")
   target_formula <- as.formula(paste0(dependent, '~.'))
   # TODO: This kills the ubuntu server when called a second time
   attribute_selection_result <- try(attribute_selection(formula=target_formula, data=data, na.action = na.pass, control=RWeka::Weka_control(
@@ -143,13 +143,13 @@ pkg.env <- new.env()
   system.time(rms::lrm(formula = as.formula('gender~age+chd'), data = data))
   print('lrm fit')
   system.time(rms::lrm.fit(cbind(data$age, data$bmi), data$gender))
-  
+
   # Model matrices do not include missing data here
   model_matrix <- model.matrix(as.formula('gender~age+chd'), data)
   model_matrix <- model_matrix[,1-2] # Drop 'intercept' row
   system.time(rms::lrm.fit(model_matrix, data$gender))
   system.time(rms::lrm.fit(model.matrix(as.formula('gender~age+chd'), data)[,1-2], data$gender))
-  
+
   #model_matrix <- model.matrix(as.formula('age~gender+chd'), data)
   #system.time(lm.fit(model_matrix, y = data$age))
   system.time(lm.fit(model.matrix(as.formula('age~gender+chd'), data), y = data$age))
@@ -164,13 +164,13 @@ pkg.env <- new.env()
     current_formula = formulas[i,]
     current_formula_string <- current_formula$formula
     dependent_class <- variable_classes[current_formula$dependentVariable]
-    
+
     # If current class is numeric, apply Linear Regression
     if (dependent_class == 'numeric')
       model <- try(lm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
     else
       model <- try( rms::lrm(formula = as.formula(current_formula_string), data = data), silent = TRUE)
-    
+
     # If binning fails, return null
     if(class(model) == "try-error") {
       message(paste0("'", current_formula_string, "' failed!"))
@@ -245,7 +245,7 @@ pkg.env <- new.env()
   for (i in length(data):1)
     if (nrow(data[i]) - length(which(is.na(data[i]))) == 0)
       data[i] <- NULL
-  
+
   return(data)
 }
 
@@ -254,7 +254,7 @@ pkg.env <- new.env()
   #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
   #save(list = c("formulas"), file = '/Users/paul/Desktop/formulas.rtmp')
   #save(list = c("formulas", 'data', 'data_id'), file = '/Users/paul/Desktop/input.rtmp')
-  
+
   # Open the local formula array of the data set
   filename <- paste0("~/regressionCubeVardumps/", data_id, "/", data_id, "-formulas.Rdmpd")
   if (file.exists(filename)) {
@@ -264,14 +264,14 @@ pkg.env <- new.env()
   if (!exists('formula_storage')) {
     formula_storage <- list()
   }
-  
+
   if (use_median_regession) {
     library(parallel)
     library(quantreg)
   } else {
     library(parallel)
   }
-  
+
   # Create NA count data structure
   not_na_count <- list()
   dimension_names <- names(data)
@@ -280,13 +280,13 @@ pkg.env <- new.env()
     current_dimension <- dimension_names[i]
     not_na_count[current_dimension] <- number_rows - length(which(is.na(data[current_dimension])))
   }
-  
+
   variable_classes <- lapply(data, class)
   workerFunction <- function(current_formula) {
     current_formula_string <- current_formula[,'formula']
     # Is there already an entry of this formula in the storage?
     if (!is.null(formula_storage[[current_formula_string]])) {
-      # Attach all information derived from the storage 
+      # Attach all information derived from the storage
       # when other metrics are added, they also need to get a new name here!
       current_formula['rSquared'] <- formula_storage[[current_formula_string]][['R2']]
       current_formula['confidenceIntervals'] <- formula_storage[[current_formula_string]][['confidenceIntervals']]
@@ -297,7 +297,7 @@ pkg.env <- new.env()
       return(current_formula)
     }
     dependent_class <- variable_classes[current_formula[,'dependentVariable']]
-    
+
     current_formula_converted <- as.formula(current_formula_string)
     # If current class is numeric, apply Linear Regression
     if (dependent_class == 'numeric') {
@@ -308,7 +308,7 @@ pkg.env <- new.env()
     } else {
       model <- try( rms::lrm(formula = current_formula_converted, data = data), silent = TRUE)
     }
-    
+
     # If calculation fails, return null
     if(class(model) == "try-error") {
       message(paste0("'", current_formula_string, "' failed!"))
@@ -324,7 +324,7 @@ pkg.env <- new.env()
           # http://stackoverflow.com/a/27510106/2274058
           current_dependent_feature <- get_dependent_feature_from_formula(current_formula_string)
           model_only_intercepts <- rq(as.formula(paste0(current_dependent_feature, '~1')), tau=0.5, data=data)
-          
+
           current_formula['rSquared'] <-  1 - model$rho/model_only_intercepts$rho
           current_formula['confidenceIntervals'] <- "Not available"
           current_formula['regressionType'] <- 'median'
@@ -379,7 +379,7 @@ pkg.env <- new.env()
     res <- mclapply(formulas_list, workerFunction, mc.cores = numWorkers)
   else
     res <- lapply(formulas_list, workerFunction)
-  
+
   # Reconstruct a data frame from the result list
   formulas_names <- names(formulas)
   # when other metrics are added, they also need to get a new name here! The order counts!
@@ -393,7 +393,7 @@ pkg.env <- new.env()
     names(result) <- formulas_names
   else
     names(result) <- formulas_names_with_rSquared
-  
+
   # Fill the formula storage with the calculated information
   # when other metrics are added, they also need to get a new name here!
   for (i in 1:nrow(result)) {
@@ -406,7 +406,7 @@ pkg.env <- new.env()
     formula_storage[[current_formula_string]][['featureCount']] <- as.character(result$featureCount[i])
     #as.numeric(as.matrix(result$rSquared[i]))
   }
-  
+
   # Create directories for the dump and save it to disk
   dir.create('~/regressionCubeVardumps/')
   dir.create(paste0("~/regressionCubeVardumps/", data_id))

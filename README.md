@@ -45,7 +45,7 @@ dns-nameservers 172.27.0.12 141.44.23.23
 dns-search isg.intern
 ```
 
-## Optional: Install `SSH` and VNC
+## Optional: Install `SSH` and `VNC`
 
 - `sudo apt-get install openssh-server`
 - `sudo apt-get install x11vnc`
@@ -57,3 +57,21 @@ I had trouble running x11vnc under Gnome, so I've installed XFCE through `sudo a
 **This repository is licensed under [Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/)** (see LICENCE.md)
 
 I will change the licence to [http://choosealicense.com/licenses/mit/](MIT) as soon as the associated paper gets accepted.
+
+## Workaround for Java Loading Error
+
+`rJava` and `OpenCPU` currently [don't play nice together](https://github.com/jeroenooms/opencpu/issues/85). We start `OpenCPU` in single user mode to bypass this problem. To do this, simply create a `R` file starting `OpenCPU` on the correct port and then adding a `CRON` job for it, so it is automatically loaded on startup.
+
+### Create the Script
+
+```
+touch startOpenCPU.R
+nano startOpenCPU.R
+  # Add `opencpu::opencpu$start(5003)`
+sudo crontab -e
+  # Add `sudo R CMD BATCH [path-to-script]/startOpenCPU.R`
+```
+
+`OpenCPU` should start in single user mode on startup now. If its not, look into the log for troubleshooting using `grep CRON /var/log/syslog`. 
+
+*Note that this is a quick-fix until the issue is resolved!*
