@@ -67,11 +67,14 @@ I will change the licence to [http://choosealicense.com/licenses/mit/](MIT) as s
 ```
 touch startOpenCPU.R
 nano startOpenCPU.R
-  # Add `opencpu::opencpu$start(5003)`
+  # Add following code without the `#`
+  # opencpu::opencpu$start(5003)
+  # opencpu::opencpu$stop()
+  # opencpu::opencpu$start(5003)
 sudo crontab -e
   # Add `sudo R CMD BATCH [path-to-script]/startOpenCPU.R`
 ```
 
-`OpenCPU` should start in single user mode on startup now. If its not, look into the log for troubleshooting using `grep CRON /var/log/syslog`. 
+`OpenCPU` should start in single user mode on startup now. If its not, look into the log for troubleshooting using `grep CRON /var/log/syslog`.
 
 *Note that this is a quick-fix until the issue is resolved!*
