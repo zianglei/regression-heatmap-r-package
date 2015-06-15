@@ -1,5 +1,5 @@
 # Libaries necessary: fmsb
-# load_dataset("/Users/paul/Desktop/patients-100k.csv")
+# load_dataset("/Users/paul/Tresors/regresson-cube/data/patients-100k.csv")
 # matrix <- r_squared_matrix(dependent = "gender")
 pkg.env <- new.env()
 #pkg.env$data <- NA
@@ -337,6 +337,18 @@ pkg.env <- new.env()
           if (coefficient_length != coefficient_na_length) {
             # Add the respective values
             current_formula['rSquared'] <- model_summary$r.squared
+            # ToDo Review
+            # data <- load_dataset('/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/breast_fat.csv', FALSE)
+            # test.lm <- lm(formula = Age ~ Body_Weight, data = data)
+            # test.lm.summary <- summary(test.lm)
+            # Review Adjusted R Squared
+            current_formula['adjrSquared'] <- model_summary$adj.r.squared
+            # Akaike Information Criterion
+            current_formula['aic'] <- AIC(model)
+            # F Model
+            current_formula['fstatisticTable'] <- as_html_table(model_summary$fstatistic)
+            current_formula['fstatistic'] <- model_summary$fstatistic[[1]]
+            # / ToDo Review
             confinterval <- confint(model)
             confintTable <- print(xtable::xtable(confinterval), type = "html")
             current_formula['confidenceIntervals'] <- confintTable
