@@ -292,6 +292,11 @@ pkg.env <- new.env()
       current_formula['confidenceIntervals'] <- formula_storage[[current_formula_string]][['confidenceIntervals']]
       current_formula['regressionType'] <- formula_storage[[current_formula_string]][['regressionType']]
       current_formula['coefficients'] <- formula_storage[[current_formula_string]][['coefficients']]
+      current_formula['adjrSquared'] <- formula_storage[[current_formula_string]][['adjrSquared']]
+      current_formula['aic'] <- formula_storage[[current_formula_string]][['aic']]
+      current_formula['fstatisticTable'] <- formula_storage[[current_formula_string]][['fstatisticTable']]
+      current_formula['fstatistic'] <- formula_storage[[current_formula_string]][['fstatistic']]
+      current_formula['residuals'] <- formula_storage[[current_formula_string]][['residuals']]
       current_formula['featureCount'] <- formula_storage[[current_formula_string]][['featureCount']]
       # And return the object
       return(current_formula)
@@ -306,7 +311,7 @@ pkg.env <- new.env()
       else
         model <- try(lm(formula = current_formula_converted, data = data), silent = TRUE)
     } else {
-      model <- try( rms::lrm(formula = current_formula_converted, data = data), silent = TRUE)
+      model <- try( rms::lrm(formula = current_formula_converted, data = data, y=TRUE, x=TRUE), silent = TRUE)
     }
 
     # If calculation fails, return null
@@ -317,6 +322,11 @@ pkg.env <- new.env()
       current_formula['confidenceIntervals'] <- ''
       current_formula['regressionType'] <- ''
       current_formula['coefficients'] <- ''
+      current_formula['adjrSquared'] <- ''
+      current_formula['aic'] <- ''
+      current_formula['fstatisticTable'] <- ''
+      current_formula['fstatistic'] <- ''
+      current_formula['residuals'] <- ''
     } else {
       if (dependent_class == 'numeric') {
         if (use_median_regession) {
@@ -343,6 +353,12 @@ pkg.env <- new.env()
             # test.lm.summary <- summary(test.lm)
             # test.lrm <- rms::lrm(formula = Pain_Discomfort ~ Body_Weight, data = data, y=TRUE, x=TRUE)
             # residuals(test.lrm)
+            confinterval <- confint(model)
+            confintTable <- print(xtable::xtable(confinterval), type = "html")
+            current_formula['confidenceIntervals'] <- confintTable
+            current_formula['regressionType'] <- 'linear'
+            current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
+
             # Review Adjusted R Squared
             current_formula['adjrSquared'] <- model_summary$adj.r.squared
             # Akaike Information Criterion
@@ -350,18 +366,18 @@ pkg.env <- new.env()
             # F Model
             current_formula['fstatisticTable'] <- as_html_table(model_summary$fstatistic)
             current_formula['fstatistic'] <- model_summary$fstatistic[[1]]
-            current_formula['residuals'] <- resid(model)
-            # / ToDo Review
-            confinterval <- confint(model)
-            confintTable <- print(xtable::xtable(confinterval), type = "html")
-            current_formula['confidenceIntervals'] <- confintTable
-            current_formula['regressionType'] <- 'linear'
-            current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
+            # Residuals
+            current_formula['residuals'] <- paste(resid(model), collapse = ",")
           } else {
             current_formula['rSquared'] <- ''
             current_formula['confidenceIntervals'] <- ''
             current_formula['regressionType'] <- ''
             current_formula['coefficients'] <- ''
+            current_formula['adjrSquared'] <- ''
+            current_formula['aic'] <- ''
+            current_formula['fstatisticTable'] <- ''
+            current_formula['fstatistic'] <- ''
+            current_formula['residuals'] <- ''
           }
         }
       }
@@ -372,6 +388,11 @@ pkg.env <- new.env()
         current_formula['confidenceIntervals'] <- ''
         current_formula['regressionType'] <- 'logistic'
         current_formula['coefficients'] <- print(xtable::xtable(data.frame(model$coefficients)), type = "html")
+        current_formula['adjrSquared'] <- ''
+        current_formula['aic'] <- ''
+        current_formula['fstatisticTable'] <- ''
+        current_formula['fstatistic'] <- ''
+        current_formula['residuals'] <- paste(residuals(model), collapse = ",")
       }
     }
     # Append count of all features
@@ -398,7 +419,7 @@ pkg.env <- new.env()
   # Reconstruct a data frame from the result list
   formulas_names <- names(formulas)
   # when other metrics are added, they also need to get a new name here! The order counts!
-  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals', 'regressionType', 'coefficients', 'featureCount')
+  formulas_names_with_rSquared <- c(formulas_names, 'rSquared', 'confidenceIntervals', 'regressionType', 'coefficients', 'adjrSquared', 'aic', 'fstatisticTable', 'fstatistic', 'residuals', 'featureCount')
   # concat results to a data frame
   result <- data.frame(matrix(unlist(res), nrow=length(formulas_list), byrow=T))
   # If no R-squared values are found at all during the calulcation, simply assigning
@@ -418,6 +439,11 @@ pkg.env <- new.env()
     formula_storage[[current_formula_string]][['confidenceIntervals']] <- as.character(result$confidenceIntervals[i])
     formula_storage[[current_formula_string]][['regressionType']] <- as.character(result$regressionType[i])
     formula_storage[[current_formula_string]][['coefficients']] <- as.character(result$coefficients[i])
+    formula_storage[[current_formula_string]][['adjrSquared']] <- as.character(result$adjrSquared[i])
+    formula_storage[[current_formula_string]][['aic']] <- as.character(result$aic[i])
+    formula_storage[[current_formula_string]][['fstatisticTable']] <- as.character(result$fstatisticTable[i])
+    formula_storage[[current_formula_string]][['fstatistic']] <- as.character(result$fstatistic[i])
+    formula_storage[[current_formula_string]][['residuals']] <- result$residuals[i]
     formula_storage[[current_formula_string]][['featureCount']] <- as.character(result$featureCount[i])
     #as.numeric(as.matrix(result$rSquared[i]))
   }
