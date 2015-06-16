@@ -341,6 +341,8 @@ pkg.env <- new.env()
             # data <- load_dataset('/Users/paul/Tresors/SHIP Breast Fat Dataset/Breast Fat Dataset/breast_fat.csv', FALSE)
             # test.lm <- lm(formula = Age ~ Body_Weight, data = data)
             # test.lm.summary <- summary(test.lm)
+            # test.lrm <- rms::lrm(formula = Pain_Discomfort ~ Body_Weight, data = data, y=TRUE, x=TRUE)
+            # residuals(test.lrm)
             # Review Adjusted R Squared
             current_formula['adjrSquared'] <- model_summary$adj.r.squared
             # Akaike Information Criterion
@@ -348,6 +350,7 @@ pkg.env <- new.env()
             # F Model
             current_formula['fstatisticTable'] <- as_html_table(model_summary$fstatistic)
             current_formula['fstatistic'] <- model_summary$fstatistic[[1]]
+            current_formula['residuals'] <- resid(model)
             # / ToDo Review
             confinterval <- confint(model)
             confintTable <- print(xtable::xtable(confinterval), type = "html")
