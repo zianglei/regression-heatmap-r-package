@@ -367,7 +367,8 @@ pkg.env <- new.env()
             current_formula['fstatisticTable'] <- as_html_table(model_summary$fstatistic)
             current_formula['fstatistic'] <- model_summary$fstatistic[[1]]
             # Residuals
-            current_formula['residuals'] <- paste(resid(model), collapse = ",")
+            #current_formula['residuals'] <- paste(resid(model), collapse = ",")
+            current_formula['residuals'] <- ''
           } else {
             current_formula['rSquared'] <- ''
             current_formula['confidenceIntervals'] <- ''
@@ -389,10 +390,11 @@ pkg.env <- new.env()
         current_formula['regressionType'] <- 'logistic'
         current_formula['coefficients'] <- print(xtable::xtable(data.frame(model$coefficients)), type = "html")
         current_formula['adjrSquared'] <- ''
-        current_formula['aic'] <- ''
+        current_formula['aic'] <- AIC(model)
         current_formula['fstatisticTable'] <- ''
         current_formula['fstatistic'] <- ''
-        current_formula['residuals'] <- paste(residuals(model), collapse = ",")
+        #current_formula['residuals'] <- paste(residuals(model), collapse = ",")
+        current_formula['residuals'] <- ''
       }
     }
     # Append count of all features
