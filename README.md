@@ -11,7 +11,7 @@ sudo apt-get libssl-dev
 # Now we have all requirements; launch R
 sudo R
 install.packages('devtools')
-devtools::install_github('Powernap/regression-cube-r-package')
+devtools::install_github('paulklemm/regression-heatmap-r-package')
 install.packages('opencpu')
 # Launch OpenCPU on Port 5003
 opencpu::opencpu$start(5003)
