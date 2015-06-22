@@ -249,6 +249,26 @@ pkg.env <- new.env()
   return(data)
 }
 
+# This encapsulates a try function. When the code gives an error, it returns the failed object
+'try_this' <- function(code, return_when_failed = '') {
+  code_result <- try( eval(parse(text = code)), silent = TRUE)
+
+  # If calculation fails, return null
+  if(class(code_result) == "try-error") {
+    return(return_when_failed)
+  }
+  else {
+    return(code_result)
+  }
+}
+
+'return_empty_if_null' <- function(statement, return_this_if_null = '') {
+  if (is.null(statement))
+    return(return_this_if_null)
+  else
+    return(statement)
+}
+
 # The function takes the formulas as input and iterates over them
 'r_squared_matrix_formula' <- function(data, formulas, data_id, parallel=TRUE, use_median_regession = FALSE) {
   #save(list = c('data', 'formulas', 'data_id'), file = '~/r_squared_input')
@@ -360,12 +380,12 @@ pkg.env <- new.env()
             current_formula['coefficients'] <- print(xtable::xtable(model_summary$coefficients), type = "html")
 
             # Review Adjusted R Squared
-            current_formula['adjrSquared'] <- model_summary$adj.r.squared
+            current_formula['adjrSquared'] <- return_empty_if_null(model_summary$adj.r.squared)
             # Akaike Information Criterion
-            current_formula['aic'] <- AIC(model)
+            current_formula['aic'] <- try_this("AIC(model)")
             # F Model
-            current_formula['fstatisticTable'] <- as_html_table(model_summary$fstatistic)
-            current_formula['fstatistic'] <- model_summary$fstatistic[[1]]
+            current_formula['fstatisticTable'] <- try_this(as_html_table(model_summary$fstatistic))
+            current_formula['fstatistic'] <- return_empty_if_null(model_summary$fstatistic[[1]])
             # Residuals
             #current_formula['residuals'] <- paste(resid(model), collapse = ",")
             current_formula['residuals'] <- ''
@@ -390,7 +410,7 @@ pkg.env <- new.env()
         current_formula['regressionType'] <- 'logistic'
         current_formula['coefficients'] <- print(xtable::xtable(data.frame(model$coefficients)), type = "html")
         current_formula['adjrSquared'] <- ''
-        current_formula['aic'] <- AIC(model)
+        current_formula['aic'] <- try_this("AIC(model)")
         current_formula['fstatisticTable'] <- ''
         current_formula['fstatistic'] <- ''
         #current_formula['residuals'] <- paste(residuals(model), collapse = ",")
