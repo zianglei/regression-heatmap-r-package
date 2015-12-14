@@ -387,8 +387,8 @@ pkg.env <- new.env()
             current_formula['fstatisticTable'] <- try_this(as_html_table(model_summary$fstatistic))
             current_formula['fstatistic'] <- return_empty_if_null(model_summary$fstatistic[[1]])
             # Residuals
-            current_formula['residuals'] <- paste(resid(model), collapse = ",")
-            #current_formula['residuals'] <- ''
+            #current_formula['residuals'] <- paste(resid(model), collapse = ",")
+            current_formula['residuals'] <- ''
           } else {
             current_formula['rSquared'] <- ''
             current_formula['confidenceIntervals'] <- ''
@@ -413,8 +413,8 @@ pkg.env <- new.env()
         current_formula['aic'] <- try_this("AIC(model)")
         current_formula['fstatisticTable'] <- ''
         current_formula['fstatistic'] <- ''
-        current_formula['residuals'] <- paste(residuals(model), collapse = ",")
-        #current_formula['residuals'] <- ''
+        #current_formula['residuals'] <- paste(residuals(model), collapse = ",")
+        current_formula['residuals'] <- ''
       }
     }
     # Append count of all features
